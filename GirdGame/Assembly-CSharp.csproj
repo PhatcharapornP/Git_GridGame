@@ -41,16 +41,18 @@
     <ImplicitlyExpandDesignTimeFacades>false</ImplicitlyExpandDesignTimeFacades>
   </PropertyGroup>
   <ItemGroup>
-     <Compile Include="Assets\Scripts\FlexibleGridLayout.cs" />
-     <Compile Include="Assets\Scripts\FlexibleLayout.cs" />
-     <Compile Include="Assets\Scripts\BoardManager.cs" />
+     <Compile Include="Assets\Scripts\GameManagers\BoardManager.cs" />
      <Compile Include="Assets\Scripts\GameState\IGameState.cs" />
      <Compile Include="Assets\Scripts\GameState\GameStateManager.cs" />
-     <Compile Include="Assets\Scripts\PlayerScore.cs" />
-     <Compile Include="Assets\Scripts\GameManager.cs" />
-     <Compile Include="Assets\Scripts\GirdButton.cs" />
-     <Compile Include="Assets\Scripts\Tweaks.cs" />
-     <Compile Include="Assets\Scripts\NewPlayableAsset.cs" />
+     <Compile Include="Assets\Scripts\TweakSystem\Tweaks.cs" />
+     <Compile Include="Assets\Scripts\PlayerScoreSystem\PlayerScore.cs" />
+     <Compile Include="Assets\Scripts\GameManagers\GameManager.cs" />
+     <Compile Include="Assets\Scripts\PieceSystem\Piece.cs" />
+     <Compile Include="Assets\Scripts\PieceSystem\IPiece.cs" />
+     <Compile Include="Assets\Scripts\PoolSystem\ObjectPoolManager.cs" />
+     <Compile Include="Assets\Scripts\Global\Globals.cs" />
+     <Compile Include="Assets\Scripts\StringExtention.cs" />
+     <Compile Include="Assets\Scripts\PoolSystem\IPoolObject.cs" />
      <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
      <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Overlay.shader" />
      <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap.shader" />
