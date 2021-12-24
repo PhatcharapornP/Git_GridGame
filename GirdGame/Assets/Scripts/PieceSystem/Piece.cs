@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
@@ -27,19 +28,24 @@ public class Piece : MonoBehaviour,IPiece,IPoolObject
         name = $"P_{Position.x},{Position.y}";
         PieceColor = GameManager.Instance.ColorPool[Random.Range(0, GameManager.Instance.ColorPool.Count)];
         button.image.color = PieceColor;
+        DOTween.Kill(button.image);
     }
 
     public void OnClickPiece()
     {
         if (GameManager.Instance.Board.CheckMatchesFromPiece(this))
-            Debug.Log($"OnClickPiece: {name} and found matches",gameObject);
+        {
+            // Debug.Log($"OnClickPiece: {name} and found matches: {GameManager.Instance.Board.CheckMatchesFromPiece(this)}".InColor(PieceColor),gameObject);
+            Debug.Log($"OnClickPiece: {name} and found matches".InColor(PieceColor));
+            // GameManager.Instance.Score.SetPlayerScore(GameManager.Instance.Board.CheckMatchesFromPiece(this));
+        }
     }
 
     public void OnSelected()
     {
         //TODO: Do something snake!?
-        
-        button.image.color = Color.grey;
+
+            DOTweenModuleUI.DOColor(button.image, Color.grey, .5f);
     }
 
    

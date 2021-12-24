@@ -1,8 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Serialization;
+using UnityEngine.Windows.WebCam;
 using Random = UnityEngine.Random;
 
 [ExecuteInEditMode]
@@ -10,22 +12,17 @@ public class BoardManager : MonoBehaviour
 {
     [Tooltip("Row amount minimum is floored at 5")] 
     [SerializeField] [Range(8,16)]private int rows = 8;
-
     [Tooltip("Collum amount minimum is floored at 5")]
     [SerializeField] [Range(8,16)]private int columns = 8;
-
     [SerializeField] [Min(35)] private int pieceSize = 35;
-    [SerializeField] private float spacing = 1f;
     [SerializeField] private int totalColumnAvailable;
     [SerializeField] private int totalRowsAvailable;
-    
+    [SerializeField] private float spacing = 1f;
     [SerializeField] private float widthDiff;
     [SerializeField] private float heightDiff;
-    
-    [SerializeField] private Piece piecePrefab;
-    public Piece[,] pieces;
     [SerializeField] private List<Piece> spawnedPieces = new List<Piece>();
     
+    private Piece[,] pieces;
     private RectTransform _rectTransform;
     private Vector3 positionOffset;
     private Vector3 center;
@@ -39,8 +36,8 @@ public class BoardManager : MonoBehaviour
         #if UNITY_EDITOR
         if (Input.GetKeyUp(KeyCode.Space))
         {
-            columns = Random.Range(8, 16);
-            rows = Random.Range(8, 16);
+            columns = Random.Range(8,16);
+            rows = Random.Range(8,16);
             GenerateBoard();
         }
         #endif
@@ -68,9 +65,7 @@ public class BoardManager : MonoBehaviour
         if (columns * rows <= 64)
         {
             foreach (var color in GameManager.Instance.gameTweak.levelOne)
-            {
                 GameManager.Instance.ColorPool.Add(color);
-            }
         }
         else if (columns * rows >= 65 && columns * rows <= 100)
         {
@@ -102,7 +97,7 @@ public class BoardManager : MonoBehaviour
         cellHeight = parentHeight / rows - ((spacing / rows) * 2);
 
         if (cellWidth < cellHeight)
-            pieceSize = Mathf.FloorToInt(cellWidth );
+            pieceSize = Mathf.FloorToInt(cellWidth);
         else 
             pieceSize = Mathf.FloorToInt(cellHeight) ;
         
@@ -157,94 +152,135 @@ public class BoardManager : MonoBehaviour
             }
         }
     }
-    
+
+    [SerializeField] private List<Piece> matchedPieces = new List<Piece>();
+
+    private List<Vector2Int> searchedPos = new List<Vector2Int>();
+
     public bool CheckMatchesFromPiece(Piece targetPiece)
     {
-        HashSet<Piece> matchedPieces = new HashSet<Piece>();
+        searchedPos.Clear();
+        matchedPieces.Clear();
+        
+        matchedPieces = GetMatchList(targetPiece);
+        // matchedPieces.Insert(0,targetPiece);
 
-        matchedPieces = FindColumnMatchFromPiece(targetPiece);
-        matchedPieces.UnionWith(FindRowMatchFromPiece(targetPiece));
-
-        List<Piece> matchedPieceList = new List<Piece>();
-        foreach (var piece in matchedPieces)
+        while (matchedPieces.Any(x => FindColumnMatchFromPiece(x).Count >= 1) || matchedPieces.Any(x => FindRowMatchFromPiece(x).Count >= 1))
         {
-            matchedPieceList.Add(piece);
+            Debug.Log($"In while");
+            for (int i = 0; i < matchedPieces.Count; i++)
+            {
+                var temp = GetMatchList(matchedPieces[i]);
+                if (temp == null)
+                    continue;
+                Debug.Log($"In while || after searching pos: {matchedPieces[i].Position}".InColor(Color.cyan));
+                for (int j = 0; j < temp.Count; j++)
+                {
+                    if (matchedPieces.Contains(temp[j]) == false)
+                        matchedPieces.Add(temp[j]);
+                }
+            }    
         }
         
-        if (matchedPieceList.Count > 1)
+        Debug.Log($"After while | got count: {matchedPieces.Count} last piece is: {matchedPieces[matchedPieces.Count-1].Position}".InColor(Color.green));
+
+        if (matchedPieces.Count > 1)
         {
-            foreach (var piece in matchedPieceList)
-                piece.OnSelected();
-            GameManager.Instance.Score.SetPlayerScore(matchedPieceList.Count);    
+            foreach (var piece in matchedPieces)
+                piece.OnSelected();    
         }
         
-        // Debug.Break();
-
-        // foreach (var piece in matchedPieceList)
-        // {
-        //     matchedPieces.UnionWith(FindColumnMatchFromPiece(piece));
-        //     matchedPieces.UnionWith(FindRowMatchFromPiece(piece));
-        // }
-        //
-        // if (matchedPieceList.Count > 1)
-        // {
-        //     foreach (var piece in matchedPieceList)
-        //         piece.OnSelected();
-        //     GameManager.Instance.Score.SetPlayerScore(matchedPieceList.Count);    
-        // }
-        return matchedPieceList.Count > 0;
+        return matchedPieces.Count > 1;
     }
 
-    private HashSet<Piece> FindColumnMatchFromPiece(Piece targetPiece)
+    private List<Piece> GetMatchList(Piece targetPiece)
     {
-        HashSet<Piece> matchedPieces = new HashSet<Piece>();
+        if (searchedPos.Contains(targetPiece.Position))
+        {
+            Debug.LogWarning($"Already search pos: {targetPiece.Position}".InColor(Color.yellow),targetPiece.gameObject);
+            return null;
+        }
+        else
+            searchedPos.Add(targetPiece.Position);
+        
+        List<Piece> tempMatches = new List<Piece>();
+        var horizontalMatches = FindColumnMatchFromPiece(targetPiece);
+        var verticalMatches = FindRowMatchFromPiece(targetPiece);
+        
+        if (horizontalMatches.Count >= 1 )
+            foreach (var piece in horizontalMatches)
+            {
+                if (tempMatches.Contains(piece) == false)
+                    tempMatches.Add(piece);
+            }
+        
+        if (verticalMatches.Count >= 1 )
+            foreach (var piece in verticalMatches)
+            {
+                if (tempMatches.Contains(piece) == false)
+                    tempMatches.Add(piece);
+            }
+
+        // tempMatches.Add(targetPiece);
+        
+        return tempMatches;
+    }
+
+    private List<Piece> FindColumnMatchFromPiece(Piece targetPiece)
+    {
+        List<Piece> tempMatches = new List<Piece>();
 
         for (int i = targetPiece.Position.x; i < columns; i++)
         {
             Piece nextPiece = GetPieceAt(i, targetPiece.Position.y);
-            if (targetPiece.PieceColor != nextPiece.PieceColor)
+            if (targetPiece.PieceColor == nextPiece.PieceColor)
+            {
+                if (matchedPieces.Contains(nextPiece) == false)
+                    tempMatches.Add(nextPiece);
+            }
+            else
                 break;
-            matchedPieces.Add(nextPiece);
         }
         
         for (int i = targetPiece.Position.x; i >= 0; i--)
         {
             Piece nextPiece = GetPieceAt(i, targetPiece.Position.y);
-            if (targetPiece.PieceColor != nextPiece.PieceColor)
+            if (targetPiece.PieceColor == nextPiece.PieceColor)
             {
-                break;
+                if (matchedPieces.Contains(nextPiece) == false)
+                    tempMatches.Add(nextPiece);
             }
-            matchedPieces.Add(nextPiece);
+            else break;
         }
-
-        return matchedPieces;
+        return tempMatches;
     }
     
-    private HashSet<Piece> FindRowMatchFromPiece(Piece targetPiece)
+    private List<Piece> FindRowMatchFromPiece(Piece targetPiece)
     {
-        HashSet<Piece> matchedPieces = new HashSet<Piece>();
+        List<Piece> tempMatches = new List<Piece>();
 
         for (int i = targetPiece.Position.y; i < rows; i++)
         {
             Piece nextPiece = GetPieceAt(targetPiece.Position.x,i);
-            if (targetPiece.PieceColor != nextPiece.PieceColor)
+            if (targetPiece.PieceColor == nextPiece.PieceColor)
             {
-                break;
+                if (matchedPieces.Contains(nextPiece) == false)
+                    tempMatches.Add(nextPiece);
             }
-            matchedPieces.Add(nextPiece);
+            else break;
         }
         
         for (int i = targetPiece.Position.y; i >= 0; i--)
         {
             Piece nextPiece = GetPieceAt(targetPiece.Position.x,i);
-            if (targetPiece.PieceColor != nextPiece.PieceColor)
+            if (targetPiece.PieceColor == nextPiece.PieceColor)
             {
-                break;
+                if (matchedPieces.Contains(nextPiece) == false)
+                    tempMatches.Add(nextPiece);
             }
-            matchedPieces.Add(nextPiece);
+            else break;
         }
-
-        return matchedPieces;
+        return tempMatches;
     }
 
     public Piece GetPieceAt(int column,int row)

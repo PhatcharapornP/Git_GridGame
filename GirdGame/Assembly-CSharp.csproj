@@ -41,18 +41,18 @@
     <ImplicitlyExpandDesignTimeFacades>false</ImplicitlyExpandDesignTimeFacades>
   </PropertyGroup>
   <ItemGroup>
+     <Compile Include="Assets\Scripts\PoolSystem\ObjectPoolManager.cs" />
+     <Compile Include="Assets\Scripts\PoolSystem\IPoolObject.cs" />
      <Compile Include="Assets\Scripts\GameManagers\BoardManager.cs" />
      <Compile Include="Assets\Scripts\GameState\IGameState.cs" />
      <Compile Include="Assets\Scripts\GameState\GameStateManager.cs" />
+     <Compile Include="Assets\Scripts\StringExtention.cs" />
      <Compile Include="Assets\Scripts\TweakSystem\Tweaks.cs" />
      <Compile Include="Assets\Scripts\PlayerScoreSystem\PlayerScore.cs" />
      <Compile Include="Assets\Scripts\GameManagers\GameManager.cs" />
+     <Compile Include="Assets\Scripts\Global\Globals.cs" />
      <Compile Include="Assets\Scripts\PieceSystem\Piece.cs" />
      <Compile Include="Assets\Scripts\PieceSystem\IPiece.cs" />
-     <Compile Include="Assets\Scripts\PoolSystem\ObjectPoolManager.cs" />
-     <Compile Include="Assets\Scripts\Global\Globals.cs" />
-     <Compile Include="Assets\Scripts\StringExtention.cs" />
-     <Compile Include="Assets\Scripts\PoolSystem\IPoolObject.cs" />
      <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
      <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Overlay.shader" />
      <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap.shader" />
@@ -296,6 +296,9 @@
      </Reference>
      <Reference Include="UnityEditor.UnityConnectModule">
      <HintPath>C:/Program Files/Unity/Hub/Editor/2021.1.28f1/Editor/Data/Managed/UnityEngine/UnityEditor.UnityConnectModule.dll</HintPath>
+     </Reference>
+     <Reference Include="DOTween">
+     <HintPath>D:/Works/Unity/Git_MiimoTechTest/GirdGame/Assets/Plugins/Demigiant/DOTween/DOTween.dll</HintPath>
      </Reference>
      <Reference Include="Unity.VisualScripting.Antlr3.Runtime">
      <HintPath>D:/Works/Unity/Git_MiimoTechTest/GirdGame/Library/PackageCache/com.unity.visualscripting@1.6.1/Runtime/VisualScripting.Flow/Dependencies/NCalc/Unity.VisualScripting.Antlr3.Runtime.dll</HintPath>
@@ -767,6 +770,10 @@
      </Reference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="Assembly-CSharp-firstpass.csproj">
+      <Project>{7014db25-056e-8e8f-afda-9c7b8af44859}</Project>
+      <Name>Assembly-CSharp-firstpass</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
