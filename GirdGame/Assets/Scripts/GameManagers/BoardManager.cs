@@ -10,6 +10,8 @@ using Random = UnityEngine.Random;
 [ExecuteInEditMode]
 public class BoardManager : MonoBehaviour
 {
+    [SerializeField] private Transform borderParent;
+    [SerializeField] private Vector3 positionOffset;
     [Tooltip("Row amount minimum is floored at 5")] 
     [SerializeField] [Range(8,16)]private int rows = 8;
     [Tooltip("Collum amount minimum is floored at 5")]
@@ -21,10 +23,11 @@ public class BoardManager : MonoBehaviour
     [SerializeField] private float widthDiff;
     [SerializeField] private float heightDiff;
     [SerializeField] private List<Piece> spawnedPieces = new List<Piece>();
-    
+    [SerializeField] private List<GameObject> spawnedBorder = new List<GameObject>();
+
+
     private Piece[,] pieces;
     private RectTransform _rectTransform;
-    private Vector3 positionOffset;
     private Vector3 center;
     private float parentWidth;
     private float parentHeight;
@@ -110,6 +113,8 @@ public class BoardManager : MonoBehaviour
         widthDiff = 0;
         widthDiff = totalColumnAvailable - columns;
     }
+
+    
     
     private void SpawnPieces()
     {
@@ -127,6 +132,7 @@ public class BoardManager : MonoBehaviour
             center.x = widthDiff * pieceSize / 2.0f;
 
         positionOffset = _rectTransform.position - center;
+        
 
         for (int row = 0; row < rows; row++)
         {
@@ -138,19 +144,37 @@ public class BoardManager : MonoBehaviour
                     Debug.LogError($"tried to get obj from pool with null Piece class!".InColor(Color.red),gameObject);
                     break;
                 }
-                piece.SetupPieceData(new Vector2Int(column, row));
+                
                 spawnedPieces.Add(piece);
                 if (piece.transform.parent != transform)
                     piece.transform.SetParent(transform);
 
                 var posX = (pieceSize * column) ;
                 var posY = (pieceSize * row) ;
-                piece.transform.localPosition = new Vector3(posX , posY, 0) - positionOffset;    
+                
+                piece.transform.localPosition = new Vector3(posX , posY + parentHeight , 0) - positionOffset;    
                 piece.transform.localScale = new Vector3(pieceSize - spacing,pieceSize - spacing ,1);
                 piece.gameObject.SetActive(true);
+                piece.SetupPieceData(new Vector2Int(column, row),new Vector3(posX , posY, 0) - positionOffset);
                 pieces[column, row] = piece;
+                
+                SpawnBorderToPosition(posX, posY);
             }
+            
+            
         }
+        
+        
+    }
+
+    private void SpawnBorderToPosition(int posX, int posY)
+    {
+        GameObject border = GameManager.Instance.Pool.PickFromPool(Globals.PoolTag.border);
+        border.transform.SetParent(borderParent);
+        border.transform.localPosition = new Vector3(posX, posY, 0) - positionOffset;
+        border.transform.localScale = new Vector3(pieceSize - spacing, pieceSize, 1);
+        border.gameObject.SetActive(true);
+        spawnedBorder.Add(border);
     }
 
     [SerializeField] private List<Piece> matchedPieces = new List<Piece>();
@@ -163,7 +187,6 @@ public class BoardManager : MonoBehaviour
         matchedPieces.Clear();
         
         matchedPieces = GetMatchList(targetPiece);
-        // matchedPieces.Insert(0,targetPiece);
 
         while (matchedPieces.Any(x => FindColumnMatchFromPiece(x).Count >= 1) || matchedPieces.Any(x => FindRowMatchFromPiece(x).Count >= 1))
         {
@@ -195,6 +218,7 @@ public class BoardManager : MonoBehaviour
 
     private List<Piece> GetMatchList(Piece targetPiece)
     {
+        //Detect if the piece has already been searched
         if (searchedPos.Contains(targetPiece.Position))
         {
             Debug.LogWarning($"Already search pos: {targetPiece.Position}".InColor(Color.yellow),targetPiece.gameObject);
@@ -220,8 +244,6 @@ public class BoardManager : MonoBehaviour
                 if (tempMatches.Contains(piece) == false)
                     tempMatches.Add(piece);
             }
-
-        // tempMatches.Add(targetPiece);
         
         return tempMatches;
     }
@@ -289,6 +311,19 @@ public class BoardManager : MonoBehaviour
     }
 
     public void ClearBoard()
+    {
+        ClearSpawnedPieces();
+        ClearSpawnedBorders();
+    }
+
+    private void ClearSpawnedBorders()
+    {
+        spawnedBorder.Clear();
+        for (int i = 0; i < borderParent.childCount; i++)
+            borderParent.GetChild(i).gameObject.SetActive(false);
+    }
+
+    private void ClearSpawnedPieces()
     {
         spawnedPieces.Clear();
         for (int i = 0; i < transform.childCount; i++)

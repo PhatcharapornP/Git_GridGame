@@ -22,13 +22,14 @@ public class Piece : MonoBehaviour,IPiece,IPoolObject
         button.onClick.AddListener(() => { OnClickPiece(); });
     }
 
-    public void SetupPieceData(Vector2Int pos)
+    public void SetupPieceData(Vector2Int pos,Vector3 targetPos)
     {
         Position = pos;
         name = $"P_{Position.x},{Position.y}";
         PieceColor = GameManager.Instance.ColorPool[Random.Range(0, GameManager.Instance.ColorPool.Count)];
         button.image.color = PieceColor;
         DOTween.Kill(button.image);
+        DOTween.To(() => transform.localPosition, x => transform.localPosition = x, targetPos, 1);
     }
 
     public void OnClickPiece()

@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b3d1b0685f3fb7d4882e43bf2cf43f92, type: 3}
   m_Name: Tweaks
   m_EditorClassIdentifier: 
+  MaxBoardNum: 16
+  MinBoardNum: 8
   levelOne:
   - {r: 0.83699995, g: 0.297135, b: 0.297135, a: 1}
   - {r: 0.306, g: 0.306, b: 1, a: 1}
