@@ -141,18 +141,28 @@ public class BoardManager : MonoBehaviour
 
             var posX = (pieceSize * column);
             var posY = (pieceSize * row);
-            SpawnNewPiece(piece, posX, posY, column, row);
+            SetupPieceTransform(piece, posX, posY, column, row);
             SpawnBorder(posX, posY);
         }
     }
 
-    private void SpawnNewPiece(Piece piece, int posX, int posY, int column, int row)
+    private void SetupPieceTransform(Piece piece, int posX, int posY, int column, int row)
     {
         piece.transform.localPosition = new Vector3(posX, posY + _rectTransform.rect.height, 0) - positionOffset;
         piece.transform.localScale = new Vector3(pieceSize - spacing, pieceSize - spacing, 1);
         piece.gameObject.SetActive(true);
         piece.SetupPieceData(new Vector2Int(column, row), new Vector3(posX, posY, 0) - positionOffset);
         pieces[column, row] = piece;
+    }
+    
+    private void SpawnDiscoPiece(DiscoPiece piece, int posX, int posY, int column, int row,int colorIndex)
+    {
+        piece.transform.localPosition = new Vector3(posX, posY + _rectTransform.rect.height, 0) - positionOffset;
+        piece.transform.localScale = new Vector3(pieceSize - spacing, pieceSize - spacing, 1);
+        piece.customColorIndex = colorIndex;
+        piece.SetupPieceData(new Vector2Int(column, row), new Vector3(posX, posY, 0) - positionOffset);
+        pieces[column, row] = piece;
+        piece.gameObject.SetActive(true);
     }
 
     private void SpawnBorder(int posX, int posY)
@@ -164,6 +174,10 @@ public class BoardManager : MonoBehaviour
         border.gameObject.SetActive(true);
         spawnedBorder.Add(border);
     }
+
+    private bool discoUnlocked = false;
+    private int discoColorIndex = -1;
+    private Vector2Int discoPos;
 
     public void CheckMatchesFromPiece(Piece targetPiece)
     {
@@ -192,10 +206,48 @@ public class BoardManager : MonoBehaviour
         {
             foreach (var piece in matchedPieces)
                 piece.OnSelected();
+
+            if (matchedPieces.Count > 6 && matchedPieces.Count < 10)
+            {
+                //TODO: Bomb piece
+            }
+            
+            if (matchedPieces.Count > 10)
+            {
+                discoUnlocked = true;
+                discoColorIndex = targetPiece.ColorIndex;
+                discoPos = targetPiece.Position;
+                
+                Debug.Log($"Unlock disco piece!: {targetPiece.Position}".InColor(targetPiece.PieceColor),targetPiece.gameObject);
+            }
             
             GameManager.Instance.Score.SetPlayerScore(matchedPieces.Count);
             GameManager.Instance.Board.FillEmptyPositions();
         }
+    }
+
+    public bool CheckColorMatch(int colorIndex)
+    {
+        var score = 0;
+        for (int c = 0; c < columns; c++)
+        {
+            for (int r = 0; r < rows; r++)
+            {
+                if (pieces[c, r].ColorIndex == colorIndex)
+                {
+                    score += 1;
+                    pieces[c,r].OnSelected();
+                }
+            }
+        }
+
+        if (score > 1)
+        {
+            GameManager.Instance.Score.SetPlayerScore(matchedPieces.Count);
+            GameManager.Instance.Board.FillEmptyPositions();
+        }
+
+        return score > 1;
     }
 
     public bool CheckMatchPossibility()
@@ -246,17 +298,33 @@ public class BoardManager : MonoBehaviour
                 var newPiece = GameManager.Instance.Pool.PickFromPool(Globals.PoolTag.piece).GetComponent<Piece>();
                 var tempX = (pieceSize * tempPos.x);
                 var tempY = (pieceSize * tempPos.y);
-                SpawnNewPiece(newPiece, tempX, tempY, tempPos.x,tempPos.y);
+                SetupPieceTransform(newPiece, tempX, tempY, tempPos.x,tempPos.y);
                 
             }
-            
-            
+
+            if (discoUnlocked)
+            {
+                if (pieces[column, row].Position == discoPos)
+                {
+                    var temp = pieces[column, row];
+                    temp.OnSelected();
+                    var newPiece = GameManager.Instance.Pool.PickFromPool(Globals.PoolTag.disco).GetComponent<DiscoPiece>();
+                    var tempX = (pieceSize * discoPos.x);
+                    var tempY = (pieceSize * discoPos.y);
+                    newPiece.customColorIndex = discoColorIndex;
+                    SetupPieceTransform(newPiece, tempX, tempY, discoPos.x,discoPos.y);
+                    pieces[column, row] = newPiece;
+                    discoUnlocked = false;
+                }
+            }
         }
         
         if (CheckMatchPossibility()== false)
         {
-            
+            GameManager.Instance.State.GetStateViaType(typeof(GameState)).EndState();
+            GameManager.Instance.State.GetStateViaType(typeof(GameOverState)).StartState();
         }
+        
         spawnedPieces.Clear();
         foreach (var piece in pieces)
             spawnedPieces.Add(piece);

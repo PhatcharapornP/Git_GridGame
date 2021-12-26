@@ -1,9 +1,5 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
@@ -15,7 +11,7 @@ public class Piece : MonoBehaviour, IPiece, IPoolObject
     public Color PieceColor { get; private set; }
     public int ColorIndex { get; protected set; }
 
-    public bool IsSelected { get; private set; }
+    public bool IsSelected { get; protected set; }
 
     [SerializeField] private Vector2Int debugPos;
     [SerializeField] private Color debugPieceColor;
@@ -27,10 +23,18 @@ public class Piece : MonoBehaviour, IPiece, IPoolObject
             button = GetComponent<Button>();
         if (button == null)
             button = gameObject.AddComponent<Button>();
+
+        button.onClick.RemoveAllListeners();
         button.onClick.AddListener(() => { OnClickPiece(); });
     }
 
-    public void SetupPieceData(Vector2Int pos, Vector3 targetPos,bool autoMove = true)
+    public void SetupPieceData(Vector2Int pos, Vector3 targetPos) {OnSetupPieceData(pos, targetPos);}
+
+    public void OnClickPiece() {OnClickedPiece();}
+
+    public void OnSelected() {OnPieceSelected();}
+
+    protected virtual void OnSetupPieceData(Vector2Int pos, Vector3 targetPos)
     {
         IsSelected = false;
         debugIsSelected = IsSelected;
@@ -39,7 +43,7 @@ public class Piece : MonoBehaviour, IPiece, IPoolObject
         MoveToTargetPos(targetPos);
     }
 
-    private void SetPieceColor(int index)
+    protected void SetPieceColor(int index)
     {
         ColorIndex = index;
         PieceColor = GameManager.Instance.ColorPool[ColorIndex];
@@ -65,15 +69,13 @@ public class Piece : MonoBehaviour, IPiece, IPoolObject
         DOTween.To(() => transform.localPosition, x => transform.localPosition = x, targetPos, .5f);
     }
 
-    public void OnClickPiece()
+    protected virtual void OnClickedPiece()
     {
         GameManager.Instance.Board.CheckMatchesFromPiece(this);
     }
 
-    public void OnSelected()
+    protected virtual void OnPieceSelected()
     {
-        //TODO: Do something snake!?
-
         IsSelected = true;
         DOTweenModuleUI.DOColor(button.image, Color.grey, 0);
         name = $"Selected_{Position.x},{Position.y}";

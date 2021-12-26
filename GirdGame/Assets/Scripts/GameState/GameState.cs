@@ -10,11 +10,7 @@ public class GameState : BaseState
     protected override void OnInitialize()
     {
         base.OnInitialize();
-        quitButton.onClick.AddListener(() =>
-        {
-            EndState();
-            GameManager.Instance.State.GetStateViaType(typeof(GameOverState)).StartState();
-        });
+        quitButton.onClick.AddListener(() => { OnQuitButton(); });
         
         randomButton.onClick.AddListener(() =>
         {
@@ -25,6 +21,12 @@ public class GameState : BaseState
                 randomButton.interactable = true;
             });
         });
+    }
+
+    public void OnQuitButton()
+    {
+        EndState();
+        GameManager.Instance.State.GetStateViaType(typeof(GameOverState)).StartState();
     }
 
     protected override void OnStartState()
