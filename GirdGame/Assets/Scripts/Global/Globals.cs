@@ -8,6 +8,7 @@ public static class Globals
     public enum  PoolTag
     {
         piece = 0,
-        border = 1
+        border = 1,
+        disco = 2
     }
 }

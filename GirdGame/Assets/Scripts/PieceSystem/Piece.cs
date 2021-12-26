@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,13 +9,9 @@ public class Piece : MonoBehaviour, IPiece, IPoolObject
     [SerializeField] private Button button;
     public Vector2Int Position { get; private set; }
     public Color PieceColor { get; private set; }
+    public int ColorIndex { get; protected set; }
 
-
-    public bool IsSelected { get; private set; }
-
-    [SerializeField] private Vector2Int debugPos;
-    [SerializeField] private Color debugPiecColor;
-    [SerializeField] private bool debugIsSelected;
+    public bool IsSelected { get; protected set; }
 
     public void InitializePoolObj()
     {
@@ -26,85 +19,51 @@ public class Piece : MonoBehaviour, IPiece, IPoolObject
             button = GetComponent<Button>();
         if (button == null)
             button = gameObject.AddComponent<Button>();
+
+        button.onClick.RemoveAllListeners();
         button.onClick.AddListener(() => { OnClickPiece(); });
     }
 
-    public void SetupPieceData(Vector2Int pos, Vector3 targetPos,bool autoMove = true)
+    public void SetupPieceData(Vector2Int pos, Vector3 targetPos) {OnSetupPieceData(pos, targetPos);}
+
+    public void OnClickPiece() {OnClickedPiece();}
+
+    public void OnSelected() {OnPieceSelected();}
+
+    protected virtual void OnSetupPieceData(Vector2Int pos, Vector3 targetPos)
     {
         IsSelected = false;
-        debugIsSelected = IsSelected;
-        Position = pos;
-        debugPos = Position;
-        PieceColor = GameManager.Instance.ColorPool[Random.Range(0, GameManager.Instance.ColorPool.Count)];
-        button.image.color = PieceColor;
-        debugPiecColor = PieceColor;
+        OverwritePos(pos);
+        SetPieceColor(Random.Range(0, GameManager.Instance.ColorPool.Count));
         MoveToTargetPos(targetPos);
-        name = $"P_{Position.x},{Position.y}";
     }
 
-    public void OverwritePieceData(Piece data)
+    protected void SetPieceColor(int index)
     {
-        IsSelected = data.IsSelected;
-        debugIsSelected = IsSelected;
-        var debugName = $"P_{Position.x},{Position.y}";
-        Position = data.Position;
-        debugPos = Position;
-        debugName = $"{debugName}_OW_from_{Position.x},{Position.y}";
-        Debug.Log($"{name} is being overwrite to {debugName} ".InColor(PieceColor),gameObject);
-        PieceColor = data.PieceColor;
-        debugPiecColor = PieceColor;
+        ColorIndex = index;
+        PieceColor = GameManager.Instance.ColorPool[ColorIndex];
         button.image.color = PieceColor;
-        name = debugName;
-        Debug.Log($"Now {name} is Selected: {IsSelected}".InColor(PieceColor),gameObject);
-        gameObject.SetActive(data.gameObject.activeInHierarchy);
-        
     }
 
     public void OverwritePos(Vector2Int newPos)
     {
         Position = newPos;
-        debugPos = Position;
-        NameGameObj();
     }
-
-    public void NameGameObj()
-    {
-        name = $"P_{Position.x},{Position.y}";
-    }
-
-    public void ForceDebugSelected(bool debug)
-    {
-        Debug.Log($"{name} Got forced selected to {debug}".InColor(Color.red),gameObject);
-        IsSelected = debug;
-        debugIsSelected = IsSelected;
-        PieceColor = Color.grey;
-        debugPiecColor = PieceColor;
-        button.image.color = PieceColor;
-    }
-
+    
     public void MoveToTargetPos(Vector3 targetPos)
     {
         DOTween.Kill(button.image);
         DOTween.To(() => transform.localPosition, x => transform.localPosition = x, targetPos, .5f);
     }
 
-    public void OnClickPiece()
+    protected virtual void OnClickedPiece()
     {
         GameManager.Instance.Board.CheckMatchesFromPiece(this);
     }
 
-    public void OnSelected()
+    protected virtual void OnPieceSelected()
     {
-        //TODO: Do something snake!?
-
         IsSelected = true;
-        DOTweenModuleUI.DOColor(button.image, Color.grey, 0);
-        name = $"Selected_{Position.x},{Position.y}";
-        gameObject.SetActive(false);
-    }
-
-    private void DisablePiece(TweenCallback callback)
-    {
         gameObject.SetActive(false);
     }
 }

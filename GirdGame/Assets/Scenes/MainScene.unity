@@ -679,6 +679,10 @@ MonoBehaviour:
     poolPrefab: {fileID: 8240428727968202350, guid: 54baed4b4ff1e4543a1d53fc4b304581, type: 3}
     size: 256
     poolParent: {fileID: 863532026}
+  - tag: 2
+    poolPrefab: {fileID: 8240428727968202350, guid: 33a66d5d8cb00dc4d8c35141683f3469, type: 3}
+    size: 64
+    poolParent: {fileID: 949332575}
 --- !u!4 &1478155208
 Transform:
   m_ObjectHideFlags: 0
