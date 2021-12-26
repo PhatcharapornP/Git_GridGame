@@ -786,6 +786,7 @@ MonoBehaviour:
   HighesScore: {fileID: 1299918613}
   startGameButton: {fileID: 1251762948}
   quitButton: {fileID: 513122995}
+  resetButton: {fileID: 7488149804655751225}
 --- !u!4 &2015106502
 Transform:
   m_ObjectHideFlags: 0
@@ -807,6 +808,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1119951886}
     m_Modifications:
+    - target: {fileID: 1591498705911092645, guid: 24270acfaa9d079478871e67b7fd3a6e, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7002756366224405364, guid: 24270acfaa9d079478871e67b7fd3a6e, type: 3}
       propertyPath: m_Name
       value: GamePanel
@@ -1010,6 +1015,17 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 680029639552e9c4b8d7ae67bad80b9a, type: 3}
+--- !u!114 &7488149804655751225 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3476720316254100310, guid: 680029639552e9c4b8d7ae67bad80b9a, type: 3}
+  m_PrefabInstance: {fileID: 7488149804655751224}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &8334862583991639411 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6621813476222912970, guid: 24270acfaa9d079478871e67b7fd3a6e, type: 3}

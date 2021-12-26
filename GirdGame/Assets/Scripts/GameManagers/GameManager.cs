@@ -19,6 +19,7 @@ public class GameManager : MonoBehaviour
     void Awake()
     {
         Instance = this;
+        playerScore.Initialize();
         Pool.Initialize(() => {gameStateManager.InitializeState();});
     }
 }

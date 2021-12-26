@@ -33,7 +33,9 @@ public class GameOverState : BaseState
     protected override void OnStartState()
     {
         base.OnStartState();
+        highestText.text = $"Highest score: {GameManager.Instance.Score.HighestScore}";
         scoreText.text = $"Your score is {GameManager.Instance.Score.Score} !";
+        
     }
 
     protected override void OnEndState()
