@@ -56,7 +56,7 @@ public class BoardManager : MonoBehaviour
         SetupColorPoolFromBoardSize();
         ClearBoard();
         CalculatePieceSize();
-        SpawnPieces();
+        PopulateBoard();
     }
 
     private void SetupColorPoolFromBoardSize()
@@ -107,7 +107,7 @@ public class BoardManager : MonoBehaviour
         widthDiff = totalColumnAvailable - columns;
     }
 
-    private void SpawnPieces()
+    private void PopulateBoard()
     {
         positionOffset = Vector3.zero;
         center = Vector3.zero;
@@ -249,6 +249,8 @@ public class BoardManager : MonoBehaviour
                 SpawnNewPiece(newPiece, tempX, tempY, tempPos.x,tempPos.y);
                 
             }
+            
+            
         }
         
         if (CheckMatchPossibility()== false)
