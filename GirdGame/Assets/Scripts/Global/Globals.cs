@@ -9,6 +9,7 @@ public static class Globals
     {
         piece = 0,
         border = 1,
-        disco = 2
+        disco = 2,
+        bomb = 3
     }
 }
