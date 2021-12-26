@@ -6,7 +6,7 @@ public interface IPiece
 {
     Vector2Int Position { get; }
     Color PieceColor { get; }
-    void SetupPieceData(Vector2Int pos, Vector3 targetPos);
+    void SetupPieceData(Vector2Int pos, Vector3 targetPos,bool autoMove);
     void OnClickPiece();
     void OnSelected();
 }

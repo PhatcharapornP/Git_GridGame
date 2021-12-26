@@ -29,7 +29,7 @@ public class Piece : MonoBehaviour, IPiece, IPoolObject
         button.onClick.AddListener(() => { OnClickPiece(); });
     }
 
-    public void SetupPieceData(Vector2Int pos, Vector3 targetPos)
+    public void SetupPieceData(Vector2Int pos, Vector3 targetPos,bool autoMove = true)
     {
         IsSelected = false;
         debugIsSelected = IsSelected;

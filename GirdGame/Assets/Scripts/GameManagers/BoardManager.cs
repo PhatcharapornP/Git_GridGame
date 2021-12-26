@@ -210,38 +210,40 @@ public class BoardManager : MonoBehaviour
         {
             while (pieces[column, row].IsSelected)
             {
-                Debug.Log($"------- Found empty at: {pieces[column, row].Position} -------".InColor(Color.red));
+                Debug.Log($"------- Found empty at: {pieces[column, row].Position} apply to current -------".InColor(Color.red));
                 Piece current = pieces[column, row];
                 Piece next = current;
+                Vector2Int tempPos = next.Position;
                 // Debug.Break();
                 for (int filler = row; filler < columns - 1; filler++)
                 {
                     Debug.Log($"next was: {next.gameObject.name} and IsSelected: {next.IsSelected}".InColor(current.PieceColor), current.gameObject);
                     next = pieces[column, filler + 1];
-                    Debug.Log($"next is: {next.gameObject.name} and IsSelected: {next.IsSelected}".InColor(next.PieceColor),current.gameObject);
+                    Debug.Log($"next is: {next.gameObject.name} and IsSelected: {next.IsSelected} apply to current".InColor(next.PieceColor),current.gameObject);
+                    current = next;
+                    tempPos = next.Position;
+                    
                     var posX = (pieceSize * column);
                     var posY = (pieceSize * filler);
-                    next.MoveToTargetPos(new Vector3(posX, posY, 0) - positionOffset);
-                    pieces[column, filler] = next;
-                    current = next;
-                    next.NameGameObj();
-                    current.NameGameObj();
+                    current.MoveToTargetPos(new Vector3(posX, posY, 0) - positionOffset);
+                    current.OverwritePos(new Vector2Int(column,filler));
+                   
+                    pieces[column, filler] = current;
+                    
                 }
-                Piece temp = next;
+                
                 var newPiece = GameManager.Instance.Pool.PickFromPool(Globals.PoolTag.piece).GetComponent<Piece>();
-                var tempX = (pieceSize * temp.Position.x);
-                var tempY = (pieceSize * temp.Position.y);
+                var tempX = (pieceSize * tempPos.x);
+                var tempY = (pieceSize * tempPos.y);
                 newPiece.transform.localPosition = new Vector3(tempX, tempY + parentHeight, 0) - positionOffset;
-                newPiece.SetupPieceData(new Vector2Int(temp.Position.x, temp.Position.y),new Vector3(tempX, tempY, 0) - positionOffset);
-                pieces[temp.Position.x, temp.Position.y] = newPiece;
+                newPiece.SetupPieceData(new Vector2Int(tempPos.x,tempPos.y),new Vector3(tempX, tempY, 0) - positionOffset,false);
+                pieces[tempPos.x, tempPos.y] = newPiece;
                 
             }
         }
         spawnedPieces.Clear();
         foreach (var piece in pieces)
-        {
             spawnedPieces.Add(piece);
-        }
     }
 
     private List<Piece> GetMatchList(Piece targetPiece)
@@ -256,16 +258,26 @@ public class BoardManager : MonoBehaviour
         var verticalMatches = FindRowMatchFromPiece(targetPiece);
 
         if (horizontalMatches.Count >= 1)
+        {
             foreach (var piece in horizontalMatches)
             {
                 if (tempMatches.Contains(piece) == false)
                     tempMatches.Add(piece);
             }
+        }
+        else
+            Debug.LogWarning($"horizontalMatches from: {targetPiece.Position} is none",targetPiece);
+
 
         if (verticalMatches.Count >= 1)
+        {
             foreach (var piece in verticalMatches)
                 if (tempMatches.Contains(piece) == false)
                     tempMatches.Add(piece);
+        }
+        else
+            Debug.LogWarning($"verticalMatches from: {targetPiece.Position} is none",targetPiece);
+            
         return tempMatches;
     }
 
@@ -281,8 +293,7 @@ public class BoardManager : MonoBehaviour
                 if (matchedPieces.Contains(nextPiece) == false)
                     tempMatches.Add(nextPiece);
             }
-            else
-                break;
+            else break;
         }
 
         for (int i = targetPiece.Position.x; i >= 0; i--)
