@@ -91,12 +91,7 @@ public class Piece : MonoBehaviour, IPiece, IPoolObject
     public void OnClickPiece()
     {
         if (GameManager.Instance.Board.CheckMatchesFromPiece(this))
-        {
-            // Debug.Log($"OnClickPiece: {name} and found matches: {GameManager.Instance.Board.CheckMatchesFromPiece(this)}".InColor(PieceColor),gameObject);
-            Debug.Log($"OnClickPiece: {name} and found matches".InColor(PieceColor));
-            // GameManager.Instance.Score.SetPlayerScore(GameManager.Instance.Board.CheckMatchesFromPiece(this));
             GameManager.Instance.Board.FillEmptyPositions();
-        }
     }
 
     public void OnSelected()

@@ -1,8 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using DG.Tweening;
 using UnityEngine;
-using UnityEngine.UI;
 
 [ExecuteInEditMode]
 public class BoardManager : MonoBehaviour
@@ -40,8 +38,8 @@ public class BoardManager : MonoBehaviour
 #if UNITY_EDITOR
         if (Input.GetKeyUp(KeyCode.Space))
         {
-            columns = 8;
-            rows = 8;
+            columns = Random.Range(5,16);
+            rows = Random.Range(5,16);
             GenerateBoard();
         }
 #endif
@@ -58,13 +56,13 @@ public class BoardManager : MonoBehaviour
         CheckReference();
         pieces = new Piece[columns, rows];
         GameManager.Instance.ColorPool.Clear();
-        SetupColorPool();
+        SetupColorPoolFromBoardSize();
         ClearBoard();
         CalculatePieceSize();
         SpawnPieces();
     }
 
-    private void SetupColorPool()
+    private void SetupColorPoolFromBoardSize()
     {
         if (columns * rows <= 64)
         {
@@ -149,15 +147,18 @@ public class BoardManager : MonoBehaviour
 
             var posX = (pieceSize * column);
             var posY = (pieceSize * row);
-
-            piece.transform.localPosition = new Vector3(posX, posY + parentHeight, 0) - positionOffset;
-            piece.transform.localScale = new Vector3(pieceSize - spacing, pieceSize - spacing, 1);
-            piece.gameObject.SetActive(true);
-            piece.SetupPieceData(new Vector2Int(column, row), new Vector3(posX, posY, 0) - positionOffset);
-            pieces[column, row] = piece;
-
+            SpawnNewPiece(piece, posX, posY, column, row);
             SpawnBorderToPosition(posX, posY);
         }
+    }
+
+    private void SpawnNewPiece(Piece piece, int posX, int posY, int column, int row)
+    {
+        piece.transform.localPosition = new Vector3(posX, posY + parentHeight, 0) - positionOffset;
+        piece.transform.localScale = new Vector3(pieceSize - spacing, pieceSize - spacing, 1);
+        piece.gameObject.SetActive(true);
+        piece.SetupPieceData(new Vector2Int(column, row), new Vector3(posX, posY, 0) - positionOffset);
+        pieces[column, row] = piece;
     }
 
     private void SpawnBorderToPosition(int posX, int posY)
@@ -206,41 +207,42 @@ public class BoardManager : MonoBehaviour
     public void FillEmptyPositions()
     {
         for (int column = 0; column < columns; column++)
-        for (int row = 0; row < rows; row++)
+            for (int row = 0; row < rows; row++)
         {
             while (pieces[column, row].IsSelected)
             {
-                Debug.Log($"------- Found empty at: {pieces[column, row].Position} apply to current -------".InColor(Color.red));
+                Debug.Log($"------- Found empty at: {pieces[column, row].Position} apply to current -------".InColor(new Color(0.81f, 0.49f, 1f)));
                 Piece current = pieces[column, row];
                 Piece next = current;
                 Vector2Int tempPos = next.Position;
-                // Debug.Break();
-                for (int filler = row; filler < columns - 1; filler++)
+                
+                for (int filler = row; filler < rows - 1; filler++)
                 {
-                    Debug.Log($"next was: {next.gameObject.name} and IsSelected: {next.IsSelected}".InColor(current.PieceColor), current.gameObject);
                     next = pieces[column, filler + 1];
-                    Debug.Log($"next is: {next.gameObject.name} and IsSelected: {next.IsSelected} apply to current".InColor(next.PieceColor),current.gameObject);
                     current = next;
                     tempPos = next.Position;
-                    
                     var posX = (pieceSize * column);
                     var posY = (pieceSize * filler);
+                    
+                    //Move down upper piece to fill downward
                     current.MoveToTargetPos(new Vector3(posX, posY, 0) - positionOffset);
                     current.OverwritePos(new Vector2Int(column,filler));
                    
+                    //Update piece array
                     pieces[column, filler] = current;
                     
                 }
                 
+                //Fill up empty position on board
                 var newPiece = GameManager.Instance.Pool.PickFromPool(Globals.PoolTag.piece).GetComponent<Piece>();
                 var tempX = (pieceSize * tempPos.x);
                 var tempY = (pieceSize * tempPos.y);
-                newPiece.transform.localPosition = new Vector3(tempX, tempY + parentHeight, 0) - positionOffset;
-                newPiece.SetupPieceData(new Vector2Int(tempPos.x,tempPos.y),new Vector3(tempX, tempY, 0) - positionOffset,false);
-                pieces[tempPos.x, tempPos.y] = newPiece;
+                SpawnNewPiece(newPiece, tempX, tempY, tempPos.x,tempPos.y);
                 
             }
         }
+        
+        
         spawnedPieces.Clear();
         foreach (var piece in pieces)
             spawnedPieces.Add(piece);
@@ -258,26 +260,14 @@ public class BoardManager : MonoBehaviour
         var verticalMatches = FindRowMatchFromPiece(targetPiece);
 
         if (horizontalMatches.Count >= 1)
-        {
             foreach (var piece in horizontalMatches)
-            {
                 if (tempMatches.Contains(piece) == false)
                     tempMatches.Add(piece);
-            }
-        }
-        else
-            Debug.LogWarning($"horizontalMatches from: {targetPiece.Position} is none",targetPiece);
-
 
         if (verticalMatches.Count >= 1)
-        {
             foreach (var piece in verticalMatches)
                 if (tempMatches.Contains(piece) == false)
                     tempMatches.Add(piece);
-        }
-        else
-            Debug.LogWarning($"verticalMatches from: {targetPiece.Position} is none",targetPiece);
-            
         return tempMatches;
     }
 
