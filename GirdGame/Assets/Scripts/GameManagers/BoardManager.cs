@@ -15,8 +15,6 @@ public class BoardManager : MonoBehaviour
     private int columns = 8;
 
     [SerializeField] [Min(35)] private int pieceSize = 35;
-    [SerializeField] private int totalColumnAvailable;
-    [SerializeField] private int totalRowsAvailable;
     [SerializeField] private float spacing = 1f;
     [SerializeField] private float widthDiff;
     [SerializeField] private float heightDiff;
@@ -28,10 +26,6 @@ public class BoardManager : MonoBehaviour
     private Piece[,] pieces;
     private RectTransform _rectTransform;
     private Vector3 center;
-    private float parentWidth;
-    private float parentHeight;
-    private float cellWidth;
-    private float cellHeight;
 
     void Update()
     {
@@ -92,19 +86,16 @@ public class BoardManager : MonoBehaviour
 
     private void CalculatePieceSize()
     {
-        parentWidth = _rectTransform.rect.width;
-        parentHeight = _rectTransform.rect.height;
-
-        cellWidth = parentWidth / columns - ((spacing / columns) * 2);
-        cellHeight = parentHeight / rows - ((spacing / rows) * 2);
+        var cellWidth = _rectTransform.rect.width / columns - ((spacing / columns) * 2);
+        var cellHeight = _rectTransform.rect.height / rows - ((spacing / rows) * 2);
 
         if (cellWidth < cellHeight)
             pieceSize = Mathf.FloorToInt(cellWidth);
         else
             pieceSize = Mathf.FloorToInt(cellHeight);
 
-        totalColumnAvailable = Mathf.FloorToInt(parentWidth / pieceSize);
-        totalRowsAvailable = Mathf.FloorToInt(parentHeight / pieceSize);
+        var totalColumnAvailable = Mathf.FloorToInt(_rectTransform.rect.width / pieceSize);
+        var totalRowsAvailable = Mathf.FloorToInt(_rectTransform.rect.height / pieceSize);
 
         heightDiff = 0;
         heightDiff = totalRowsAvailable - rows;
@@ -154,7 +145,7 @@ public class BoardManager : MonoBehaviour
 
     private void SpawnNewPiece(Piece piece, int posX, int posY, int column, int row)
     {
-        piece.transform.localPosition = new Vector3(posX, posY + parentHeight, 0) - positionOffset;
+        piece.transform.localPosition = new Vector3(posX, posY + _rectTransform.rect.height, 0) - positionOffset;
         piece.transform.localScale = new Vector3(pieceSize - spacing, pieceSize - spacing, 1);
         piece.gameObject.SetActive(true);
         piece.SetupPieceData(new Vector2Int(column, row), new Vector3(posX, posY, 0) - positionOffset);
