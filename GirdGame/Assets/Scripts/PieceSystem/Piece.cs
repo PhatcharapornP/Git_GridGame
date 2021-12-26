@@ -90,8 +90,7 @@ public class Piece : MonoBehaviour, IPiece, IPoolObject
 
     public void OnClickPiece()
     {
-        if (GameManager.Instance.Board.CheckMatchesFromPiece(this))
-            GameManager.Instance.Board.FillEmptyPositions();
+        GameManager.Instance.Board.CheckMatchesFromPiece(this);
     }
 
     public void OnSelected()
