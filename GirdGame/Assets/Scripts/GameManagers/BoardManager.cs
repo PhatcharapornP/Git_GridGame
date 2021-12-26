@@ -31,11 +31,7 @@ public class BoardManager : MonoBehaviour
     {
 #if UNITY_EDITOR
         if (Input.GetKeyUp(KeyCode.Space))
-        {
-            columns = Random.Range(5,16);
-            rows = Random.Range(5,16);
-            GenerateBoard();
-        }
+            GenerateRandomizeBoard();
 #endif
     }
 
@@ -43,6 +39,13 @@ public class BoardManager : MonoBehaviour
     {
         if (_rectTransform == null)
             _rectTransform = GetComponent<RectTransform>();
+    }
+
+    public void GenerateRandomizeBoard()
+    {
+        columns = Random.Range(5,16);
+        rows = Random.Range(5,16);
+        GenerateBoard();
     }
 
     public void GenerateBoard()
@@ -139,7 +142,7 @@ public class BoardManager : MonoBehaviour
             var posX = (pieceSize * column);
             var posY = (pieceSize * row);
             SpawnNewPiece(piece, posX, posY, column, row);
-            SpawnBorderToPosition(posX, posY);
+            SpawnBorder(posX, posY);
         }
     }
 
@@ -152,7 +155,7 @@ public class BoardManager : MonoBehaviour
         pieces[column, row] = piece;
     }
 
-    private void SpawnBorderToPosition(int posX, int posY)
+    private void SpawnBorder(int posX, int posY)
     {
         GameObject border = GameManager.Instance.Pool.PickFromPool(Globals.PoolTag.border);
         border.transform.SetParent(borderParent);
@@ -162,7 +165,7 @@ public class BoardManager : MonoBehaviour
         spawnedBorder.Add(border);
     }
 
-    public bool CheckMatchesFromPiece(Piece targetPiece)
+    public void CheckMatchesFromPiece(Piece targetPiece)
     {
         searchedPos.Clear();
         matchedPieces.Clear();
@@ -189,10 +192,26 @@ public class BoardManager : MonoBehaviour
         {
             foreach (var piece in matchedPieces)
                 piece.OnSelected();
+            
+            GameManager.Instance.Score.SetPlayerScore(matchedPieces.Count);
+            GameManager.Instance.Board.FillEmptyPositions();
         }
-        Debug.Log($"CheckMatches at: {targetPiece.Position} got matchedPiece: {matchedPieces.Count}".InColor(targetPiece.PieceColor),targetPiece.gameObject);
+    }
 
-        return matchedPieces.Count > 1;
+    public bool CheckMatchPossibility()
+    {
+        HashSet<Piece> matchedPieces = new HashSet<Piece>();
+        for (int row = 0; row < rows; row++)
+        {
+            for (int column = 0; column < columns; column++)
+            {
+                var horizontalMatches = FindColumnMatchFromPiece(pieces[column,row]);
+                var verticalMatches = FindRowMatchFromPiece(pieces[column,row]);
+                matchedPieces.UnionWith(horizontalMatches);
+                matchedPieces.UnionWith(verticalMatches);
+            }
+        }
+        return matchedPieces.Count > 0;
     }
 
     public void FillEmptyPositions()
@@ -202,7 +221,6 @@ public class BoardManager : MonoBehaviour
         {
             while (pieces[column, row].IsSelected)
             {
-                Debug.Log($"------- Found empty at: {pieces[column, row].Position} apply to current -------".InColor(new Color(0.81f, 0.49f, 1f)));
                 Piece current = pieces[column, row];
                 Piece next = current;
                 Vector2Int tempPos = next.Position;
@@ -233,7 +251,10 @@ public class BoardManager : MonoBehaviour
             }
         }
         
-        
+        if (CheckMatchPossibility()== false)
+        {
+            
+        }
         spawnedPieces.Clear();
         foreach (var piece in pieces)
             spawnedPieces.Add(piece);
