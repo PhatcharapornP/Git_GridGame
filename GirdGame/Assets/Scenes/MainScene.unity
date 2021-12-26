@@ -375,9 +375,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   borderParent: {fileID: 863532026}
   positionOffset: {x: 0, y: 0, z: 0}
-  boardYOffset: {x: 0, y: 0, z: 0}
-  rows: 15
-  columns: 12
+  rows: 5
+  columns: 5
   pieceSize: 35
   totalColumnAvailable: 16
   totalRowsAvailable: 18
