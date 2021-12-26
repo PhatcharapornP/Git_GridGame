@@ -13,10 +13,6 @@ public class Piece : MonoBehaviour, IPiece, IPoolObject
 
     public bool IsSelected { get; protected set; }
 
-    [SerializeField] private Vector2Int debugPos;
-    [SerializeField] private Color debugPieceColor;
-    [SerializeField] private bool debugIsSelected;
-
     public void InitializePoolObj()
     {
         if (button == null)
@@ -37,7 +33,6 @@ public class Piece : MonoBehaviour, IPiece, IPoolObject
     protected virtual void OnSetupPieceData(Vector2Int pos, Vector3 targetPos)
     {
         IsSelected = false;
-        debugIsSelected = IsSelected;
         OverwritePos(pos);
         SetPieceColor(Random.Range(0, GameManager.Instance.ColorPool.Count));
         MoveToTargetPos(targetPos);
@@ -48,21 +43,13 @@ public class Piece : MonoBehaviour, IPiece, IPoolObject
         ColorIndex = index;
         PieceColor = GameManager.Instance.ColorPool[ColorIndex];
         button.image.color = PieceColor;
-        debugPieceColor = PieceColor;
     }
 
     public void OverwritePos(Vector2Int newPos)
     {
         Position = newPos;
-        debugPos = Position;
-        NameGameObj();
     }
-
-    public void NameGameObj()
-    {
-        name = $"P_{Position.x},{Position.y}";
-    }
-
+    
     public void MoveToTargetPos(Vector3 targetPos)
     {
         DOTween.Kill(button.image);
@@ -77,8 +64,6 @@ public class Piece : MonoBehaviour, IPiece, IPoolObject
     protected virtual void OnPieceSelected()
     {
         IsSelected = true;
-        DOTweenModuleUI.DOColor(button.image, Color.grey, 0);
-        name = $"Selected_{Position.x},{Position.y}";
         gameObject.SetActive(false);
     }
 }

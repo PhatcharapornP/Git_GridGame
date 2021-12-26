@@ -14,7 +14,6 @@ public class DiscoPiece : Piece
 
     protected override void OnClickedPiece()
     {
-        Debug.Log($"OnClickedPiece: {Position}".InColor(PieceColor),gameObject);
         IsSelected = GameManager.Instance.Board.CheckColorMatch(ColorIndex);
     }
 }

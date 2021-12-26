@@ -6,7 +6,8 @@ public class GameState : BaseState
 {
     [SerializeField] private Button quitButton;
     [SerializeField] private Button randomButton;
-
+    private int startColumn;
+    private int startRow;
     protected override void OnInitialize()
     {
         base.OnInitialize();
@@ -21,7 +22,12 @@ public class GameState : BaseState
                 randomButton.interactable = true;
             });
         });
+
+        startColumn = GameManager.Instance.gameTweak.startColumnSize;
+        startRow = GameManager.Instance.gameTweak.startRowSize;
     }
+    
+    
 
     public void OnQuitButton()
     {
@@ -33,7 +39,8 @@ public class GameState : BaseState
     {
         base.OnInitialize();
         statePanel.gameObject.SetActive(true);
-        GameManager.Instance.Score.SetPlayerScore(0);
+        GameManager.Instance.Score.ResetPlayerScore();
+        GameManager.Instance.Board.SetBoardSize(startColumn,startRow);
         GameManager.Instance.Board.GenerateBoard();
     }
 

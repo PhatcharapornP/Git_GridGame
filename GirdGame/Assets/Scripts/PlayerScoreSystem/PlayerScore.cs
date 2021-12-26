@@ -18,7 +18,13 @@ public class PlayerScore : MonoBehaviour
     {
         Score += targetScore;
         CheckHighestScore();
-        scoreText.text = $"Score: {Score}";
+        scoreText.text = "Score: "+Score;
+    }
+
+    public void ResetPlayerScore()
+    {
+        Score = 0;
+        scoreText.text = "Score: "+Score;
     }
 
     public void CheckHighestScore()

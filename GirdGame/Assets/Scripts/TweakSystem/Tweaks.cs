@@ -7,6 +7,9 @@ public class Tweaks : ScriptableObject
 {
    public int MaxBoardNum;
    public int MinBoardNum;
+
+   public int startColumnSize;
+   public int startRowSize;
    
    public Color[] levelOne;
 
