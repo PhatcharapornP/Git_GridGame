@@ -8,10 +8,12 @@ public class GameManager : MonoBehaviour
     [SerializeField] private ObjectPoolManager objectPoolManager;
     [SerializeField] private PlayerScore playerScore;
     [SerializeField] private BoardManager boardManager;
+    [SerializeField] private TimeCounter timeCounter;
     public BoardManager Board => boardManager;
     public PlayerScore Score => playerScore;
     public ObjectPoolManager Pool => objectPoolManager;
     public GameStateManager State => gameStateManager;
+    public TimeCounter Timer => timeCounter;
     
     public Tweaks gameTweak;
     public List<Color> ColorPool = new List<Color>();
@@ -20,6 +22,7 @@ public class GameManager : MonoBehaviour
     {
         Instance = this;
         playerScore.Initialize();
+        
         Pool.Initialize(() => {gameStateManager.InitializeState();});
     }
 }

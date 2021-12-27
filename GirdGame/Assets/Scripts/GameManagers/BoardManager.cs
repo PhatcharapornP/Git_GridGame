@@ -278,7 +278,8 @@ public class BoardManager : MonoBehaviour
         if (score > 1)
         {
             OnDetectSpecialPiece?.Invoke();
-            GameManager.Instance.Score.SetPlayerScore(matchedPieces.Count);
+            GameManager.Instance.Timer.AddTimeLimit(GameManager.Instance.gameTweak.discoPieceTimeBonus);
+            GameManager.Instance.Score.SetPlayerScore(Mathf.FloorToInt(matchedPieces.Count * GameManager.Instance.gameTweak.discoPieceBonus));
             GameManager.Instance.Board.FillEmptyPositions();
         }
 
@@ -309,7 +310,8 @@ public class BoardManager : MonoBehaviour
         if (score > 1)
         {
             OnDetectSpecialPiece?.Invoke();
-            GameManager.Instance.Score.SetPlayerScore(matchedPieces.Count);
+            GameManager.Instance.Timer.AddTimeLimit(GameManager.Instance.gameTweak.bombPieceTimeBonus);
+            GameManager.Instance.Score.SetPlayerScore(Mathf.FloorToInt(matchedPieces.Count * GameManager.Instance.gameTweak.bombPieceBonus));
             GameManager.Instance.Board.FillEmptyPositions();
         }
 

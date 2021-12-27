@@ -16,6 +16,12 @@ MonoBehaviour:
   MinBoardNum: 5
   startColumnSize: 8
   startRowSize: 8
+  startTimer: 30
+  timeBonus: 1.5
+  discoPieceTimeBonus: 5
+  bombPieceTimeBonus: 2.5
+  discoPieceBonus: 0.5
+  bombPieceBonus: 0.2
   levelOne:
   - {r: 0.83699995, g: 0.297135, b: 0.297135, a: 1}
   - {r: 0.306, g: 0.306, b: 1, a: 1}
