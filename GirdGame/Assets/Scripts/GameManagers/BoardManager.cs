@@ -22,7 +22,7 @@ public class BoardManager : MonoBehaviour
     private Piece[,] pieces;
     private RectTransform _rectTransform;
     private Vector3 center;
-    private UnityAction OnDetectSpecialPiecet;
+    private UnityAction OnDetectSpecialPiece;
     private bool discoUnlocked = false;
     private int specialPieceColorIndex = -1;
     private Vector2Int specialPiecePos;
@@ -180,7 +180,7 @@ public class BoardManager : MonoBehaviour
     {
         searchedPos.Clear();
         matchedPieces.Clear();
-        OnDetectSpecialPiecet = null;
+        OnDetectSpecialPiece = null;
 
         matchedPieces = GetMatchList(targetPiece);
         for (int p = 0; p < matchedPieces.Count; p++)
@@ -215,11 +215,17 @@ public class BoardManager : MonoBehaviour
             for (int p = 0; p < matchedPieces.Count; p++)
             {
                 matchedPieces[p].OnSelected();
-                if (matchedPieces[p] is DiscoPiece || matchedPieces[p] is BombPiece)
-                    OnDetectSpecialPiecet = () => { matchedPieces[p].OnClickPiece(); };
+                if (matchedPieces[p] is BaseSpecialPiece)
+                    OnDetectSpecialPiece = () =>
+                    {
+                        matchedPieces[p].OnClickPiece();
+                        return;
+                    };
 
                 if (p == matchedPieces.Count - 1)
-                    OnDetectSpecialPiecet?.Invoke();
+                {
+                    OnDetectSpecialPiece?.Invoke();
+                }
             }
 
             GameManager.Instance.Board.FillEmptyPositions();
@@ -231,10 +237,20 @@ public class BoardManager : MonoBehaviour
         specialPieceColorIndex = targetPiece.ColorIndex;
         specialPiecePos = targetPiece.Position;
     }
+    
+    private void OnSpawnSpecialPiece(BaseSpecialPiece newPiece, int column, int row)
+    {
+        var tempX = (pieceSize * specialPiecePos.x);
+        var tempY = (pieceSize * specialPiecePos.y);
+        newPiece.customColorIndex = specialPieceColorIndex;
+        SetupPieceTransform(newPiece, tempX, tempY, specialPiecePos.x, specialPiecePos.y);
+        pieces[column, row] = newPiece;
+    }
 
     public bool CheckColorMatch(int colorIndex)
     {
         var score = 0;
+        OnDetectSpecialPiece = null;
         for (int c = 0; c < columns; c++)
         {
             for (int r = 0; r < rows; r++)
@@ -242,13 +258,15 @@ public class BoardManager : MonoBehaviour
                 if (pieces[c, r].ColorIndex == colorIndex)
                 {
                     score += 1;
-                    pieces[c, r].OnSelected();
+                    if (pieces[c,r].IsSelected == false)
+                        pieces[c, r].OnSelected();
                 }
             }
         }
 
         if (score > 1)
         {
+            OnDetectSpecialPiece?.Invoke();
             GameManager.Instance.Score.SetPlayerScore(matchedPieces.Count);
             GameManager.Instance.Board.FillEmptyPositions();
         }
@@ -256,9 +274,10 @@ public class BoardManager : MonoBehaviour
         return score > 1;
     }
     
-    public bool DestroySameDimenstion(Vector2Int targetPos)
+    public bool DestroySameDimension(Vector2Int targetPos)
     {
         var score = 0;
+        OnDetectSpecialPiece = null;
         for (int c = 0; c < columns; c++)
         {
             for (int r = 0; r < rows; r++)
@@ -266,13 +285,15 @@ public class BoardManager : MonoBehaviour
                 if (c == targetPos.x || r == targetPos.y)
                 {
                     score += 1;
-                    pieces[c, r].OnSelected();
+                    if (pieces[c,r].IsSelected == false)
+                        pieces[c, r].OnSelected();
                 }
             }
         }
 
         if (score > 1)
         {
+            OnDetectSpecialPiece?.Invoke();
             GameManager.Instance.Score.SetPlayerScore(matchedPieces.Count);
             GameManager.Instance.Board.FillEmptyPositions();
         }
@@ -335,12 +356,8 @@ public class BoardManager : MonoBehaviour
                 {
                     var temp = pieces[column, row];
                     temp.OnSelected();
-                    var newPiece = GameManager.Instance.Pool.PickFromPool(Globals.PoolTag.bomb).GetComponent<BombPiece>();
-                    var tempX = (pieceSize * specialPiecePos.x);
-                    var tempY = (pieceSize * specialPiecePos.y);
-                    newPiece.customColorIndex = specialPieceColorIndex;
-                    SetupPieceTransform(newPiece, tempX, tempY, specialPiecePos.x, specialPiecePos.y);
-                    pieces[column, row] = newPiece;
+                    var newPiece = GameManager.Instance.Pool.PickFromPool(Globals.PoolTag.bomb).GetComponent<BaseSpecialPiece>();
+                    OnSpawnSpecialPiece(newPiece, column, row);
                     bombUnlocked = false;
                 }
             }
@@ -351,12 +368,13 @@ public class BoardManager : MonoBehaviour
                 {
                     var temp = pieces[column, row];
                     temp.OnSelected();
-                    var newPiece = GameManager.Instance.Pool.PickFromPool(Globals.PoolTag.disco).GetComponent<DiscoPiece>();
-                    var tempX = (pieceSize * specialPiecePos.x);
-                    var tempY = (pieceSize * specialPiecePos.y);
-                    newPiece.customColorIndex = specialPieceColorIndex;
-                    SetupPieceTransform(newPiece, tempX, tempY, specialPiecePos.x, specialPiecePos.y);
-                    pieces[column, row] = newPiece;
+                    var newPiece = GameManager.Instance.Pool.PickFromPool(Globals.PoolTag.disco).GetComponent<BaseSpecialPiece>();
+                    OnSpawnSpecialPiece(newPiece, column, row);
+                    // var tempX = (pieceSize * specialPiecePos.x);
+                    // var tempY = (pieceSize * specialPiecePos.y);
+                    // newPiece.customColorIndex = specialPieceColorIndex;
+                    // SetupPieceTransform(newPiece, tempX, tempY, specialPiecePos.x, specialPiecePos.y);
+                    // pieces[column, row] = newPiece;
                     discoUnlocked = false;
                 }
             }
