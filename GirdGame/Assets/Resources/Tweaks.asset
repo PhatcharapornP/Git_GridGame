@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3d1b0685f3fb7d4882e43bf2cf43f92, type: 3}
+  m_Name: Tweaks
+  m_EditorClassIdentifier: 
+  MaxBoardNum: 16
+  MinBoardNum: 5
+  startColumnSize: 8
+  startRowSize: 8
+  levelOne:
+  - {r: 0.83699995, g: 0.297135, b: 0.297135, a: 1}
+  - {r: 0.306, g: 0.306, b: 1, a: 1}
+  - {r: 0.31300002, g: 1, b: 0.44231766, a: 1}
+  - {r: 1, g: 0.8845741, b: 0.23400003, a: 1}
+  levelTwo:
+  - {r: 0.0023902704, g: 0.4433962, b: 0.30374435, a: 1}
+  - {r: 1, g: 0.6839765, b: 0.334, a: 1}
+  - {r: 1, g: 1, b: 1, a: 1}
+  levelThree:
+  - {r: 0.39099997, g: 0.909247, b: 1, a: 1}
+  - {r: 0.46226418, g: 0, b: 0.35886294, a: 1}
