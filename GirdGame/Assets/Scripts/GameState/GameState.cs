@@ -39,9 +39,11 @@ public class GameState : BaseState
     {
         base.OnInitialize();
         statePanel.gameObject.SetActive(true);
+        GameManager.Instance.Timer.ResetTimer();
         GameManager.Instance.Score.ResetPlayerScore();
         GameManager.Instance.Board.SetBoardSize(startColumn,startRow);
         GameManager.Instance.Board.GenerateBoard();
+        GameManager.Instance.Timer.StartTimer();
     }
 
     protected override void OnEndState()

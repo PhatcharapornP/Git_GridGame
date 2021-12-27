@@ -278,7 +278,8 @@ public class BoardManager : MonoBehaviour
         if (score > 1)
         {
             OnDetectSpecialPiece?.Invoke();
-            GameManager.Instance.Score.SetPlayerScore(matchedPieces.Count);
+            GameManager.Instance.Timer.AddTimeLimit(GameManager.Instance.gameTweak.discoPieceTimeBonus,colorIndex);
+            GameManager.Instance.Score.SetPlayerScore(Mathf.FloorToInt(matchedPieces.Count * GameManager.Instance.gameTweak.discoPieceBonus));
             GameManager.Instance.Board.FillEmptyPositions();
         }
 
@@ -309,7 +310,8 @@ public class BoardManager : MonoBehaviour
         if (score > 1)
         {
             OnDetectSpecialPiece?.Invoke();
-            GameManager.Instance.Score.SetPlayerScore(matchedPieces.Count);
+            GameManager.Instance.Timer.AddTimeLimit(GameManager.Instance.gameTweak.bombPieceTimeBonus);
+            GameManager.Instance.Score.SetPlayerScore(Mathf.FloorToInt(matchedPieces.Count * GameManager.Instance.gameTweak.bombPieceBonus));
             GameManager.Instance.Board.FillEmptyPositions();
         }
 
@@ -385,11 +387,6 @@ public class BoardManager : MonoBehaviour
                     temp.OnSelected();
                     var newPiece = GameManager.Instance.Pool.PickFromPool(Globals.PoolTag.disco).GetComponent<BaseSpecialPiece>();
                     OnSpawnSpecialPiece(newPiece, column, row);
-                    // var tempX = (pieceSize * specialPiecePos.x);
-                    // var tempY = (pieceSize * specialPiecePos.y);
-                    // newPiece.customColorIndex = specialPieceColorIndex;
-                    // SetupPieceTransform(newPiece, tempX, tempY, specialPiecePos.x, specialPiecePos.y);
-                    // pieces[column, row] = newPiece;
                     discoUnlocked = false;
                 }
             }
