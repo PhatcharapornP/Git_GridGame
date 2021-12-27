@@ -17,7 +17,6 @@ MonoBehaviour:
   startColumnSize: 8
   startRowSize: 8
   startTimer: 30
-  timeBonus: 1.5
   discoPieceTimeBonus: 5
   bombPieceTimeBonus: 2.5
   discoPieceBonus: 0.5

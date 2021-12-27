@@ -11,7 +11,7 @@ public class Tweaks : ScriptableObject
    public int startColumnSize;
    public int startRowSize;
 
-   public float startTimer = 50;
+   public float startTimer = 11;
    public float discoPieceTimeBonus = .10f;
    public float bombPieceTimeBonus = .5f;
    public float discoPieceBonus = .5f;
