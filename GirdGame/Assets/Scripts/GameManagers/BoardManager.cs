@@ -27,8 +27,8 @@ public class BoardManager : MonoBehaviour
     private int specialPieceColorIndex = -1;
     private Vector2Int specialPiecePos;
     private bool bombUnlocked = false;
-    HashSet<Piece> tempColumnMatches = new HashSet<Piece>();
-    HashSet<Piece> tempRowMatches = new HashSet<Piece>();
+    List<Piece> tempColumnMatches = new List<Piece>();
+    List<Piece> tempRowMatches = new List<Piece>();
     
 
     void Update()
@@ -188,11 +188,13 @@ public class BoardManager : MonoBehaviour
             var temp = GetMatchList(matchedPieces[p]);
             if (temp == null)
                 continue;
-            for (int j = 0; j < temp.Count; j++)
+            // while (temp.Count >)
             {
-                if (matchedPieces.Contains(temp[j]) == false)
-                    matchedPieces.Add(temp[j]);
-                
+                for (int j = 0; j < temp.Count; j++)
+                {
+                    if (matchedPieces.Contains(temp[j]) == false)
+                        matchedPieces.Add(temp[j]);
+                }    
             }
         }
 
@@ -201,34 +203,40 @@ public class BoardManager : MonoBehaviour
             if (matchedPieces.Count >= 6 && matchedPieces.Count < 10)
             {
                 bombUnlocked = true;
+                discoUnlocked = false;
                 SetupSpecialPieceData(targetPiece);
             }
-            else if (matchedPieces.Count >= 10)
+            
+            if (matchedPieces.Count >= 10)
             {
                 discoUnlocked = true;
+                bombUnlocked = false;
                 SetupSpecialPieceData(targetPiece);
             }
-
-            GameManager.Instance.Score.SetPlayerScore(matchedPieces.Count);
-            
 
             for (int p = 0; p < matchedPieces.Count; p++)
             {
                 matchedPieces[p].OnSelected();
                 if (matchedPieces[p] is BaseSpecialPiece)
+                {
+                    var piece = matchedPieces[p];
                     OnDetectSpecialPiece = () =>
                     {
-                        matchedPieces[p].OnClickPiece();
-                        return;
+                        GameManager.Instance.Score.SetPlayerScore(matchedPieces.Count);
+                        piece.OnClickPiece();
                     };
-
-                if (p == matchedPieces.Count - 1)
-                {
-                    OnDetectSpecialPiece?.Invoke();
+                    
                 }
             }
 
-            GameManager.Instance.Board.FillEmptyPositions();
+            if (OnDetectSpecialPiece == null)
+            {
+                GameManager.Instance.Score.SetPlayerScore(matchedPieces.Count);
+                GameManager.Instance.Board.FillEmptyPositions();
+            }
+            else
+                OnDetectSpecialPiece.Invoke();    
+          
         }
     }
 
@@ -257,9 +265,12 @@ public class BoardManager : MonoBehaviour
             {
                 if (pieces[c, r].ColorIndex == colorIndex)
                 {
-                    score += 1;
-                    if (pieces[c,r].IsSelected == false)
-                        pieces[c, r].OnSelected();
+                    if (pieces[c, r].IsSelected == false && pieces[c,r].gameObject.activeInHierarchy)
+                    {
+                        score += 1;
+                        pieces[c, r].OnSelected();    
+                    }
+                    
                 }
             }
         }
@@ -284,9 +295,13 @@ public class BoardManager : MonoBehaviour
             {
                 if (c == targetPos.x || r == targetPos.y)
                 {
-                    score += 1;
-                    if (pieces[c,r].IsSelected == false)
+                    
+                    if (pieces[c, r].IsSelected == false && pieces[c, r].gameObject.activeInHierarchy)
+                    {
+                        score += 1;
                         pieces[c, r].OnSelected();
+                    }
+                        
                 }
             }
         }
@@ -321,7 +336,7 @@ public class BoardManager : MonoBehaviour
         for (int column = 0; column < columns; column++)
         for (int row = 0; row < rows; row++)
         {
-            while (pieces[column, row].IsSelected)
+            while (pieces[column, row].IsSelected || pieces[column,row].gameObject.activeInHierarchy == false)
             {
                 Piece current = pieces[column, row];
                 Piece next = current;
@@ -336,8 +351,8 @@ public class BoardManager : MonoBehaviour
                     var posY = (pieceSize * filler);
 
                     //Move down upper piece to fill downward
-                    current.MoveToTargetPos(new Vector3(posX, posY, 0) - positionOffset);
                     current.OverwritePos(new Vector2Int(column, filler));
+                    current.MoveToTargetPos(new Vector3(posX, posY, 0) - positionOffset);
 
                     //Update piece array
                     pieces[column, filler] = current;
@@ -399,17 +414,29 @@ public class BoardManager : MonoBehaviour
         searchedPos.Add(targetPiece.Position);
         List<Piece> tempMatches = new List<Piece>();
         var horizontalMatches = FindColumnMatchFromPiece(targetPiece);
-        horizontalMatches.UnionWith(FindRowMatchFromPiece(targetPiece));
+        var verticalmatches = FindRowMatchFromPiece(targetPiece);
 
         if (horizontalMatches.Count >= 1)
-            foreach (Piece piece in horizontalMatches)
-                if (tempMatches.Contains(piece) == false)
-                    tempMatches.Add(piece);
+        {
+            for (int i = 0; i < horizontalMatches.Count; i++)
+            {
+                if (tempMatches.Contains(horizontalMatches[i]) == false)
+                    tempMatches.Add(horizontalMatches[i]);              
+            }
+        }
+        
+        
+        if (verticalmatches.Count >= 1)
+            for (int j = 0; j < verticalmatches.Count; j++)
+            {
+                if (tempMatches.Contains(verticalmatches[j]) == false)
+                    tempMatches.Add(verticalmatches[j]);                      
+            }
 
         return tempMatches;
     }
     
-    private HashSet<Piece> FindColumnMatchFromPiece(Piece targetPiece)
+    private List<Piece> FindColumnMatchFromPiece(Piece targetPiece)
     {
         tempColumnMatches.Clear();
         Piece nextPiece = targetPiece;
@@ -438,7 +465,7 @@ public class BoardManager : MonoBehaviour
         return tempColumnMatches;
     }
     
-    private HashSet<Piece> FindRowMatchFromPiece(Piece targetPiece)
+    private List<Piece> FindRowMatchFromPiece(Piece targetPiece)
     {
         tempRowMatches.Clear();
         Piece nextPiece = targetPiece;

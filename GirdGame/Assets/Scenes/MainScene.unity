@@ -673,7 +673,7 @@ MonoBehaviour:
   pools:
   - tag: 0
     poolPrefab: {fileID: 8240428727968202350, guid: 3207d6cefe6d64d4c9986bb5143433a2, type: 3}
-    size: 300
+    size: 500
     poolParent: {fileID: 949332575}
   - tag: 1
     poolPrefab: {fileID: 8240428727968202350, guid: 54baed4b4ff1e4543a1d53fc4b304581, type: 3}

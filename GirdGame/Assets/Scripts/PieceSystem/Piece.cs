@@ -1,9 +1,11 @@
+using System;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 [RequireComponent(typeof(Button))]
+[Serializable]
 public class Piece : MonoBehaviour, IPiece, IPoolObject
 {
     [SerializeField] private Button button;
@@ -48,6 +50,7 @@ public class Piece : MonoBehaviour, IPiece, IPoolObject
     public void OverwritePos(Vector2Int newPos)
     {
         Position = newPos;
+        name = $"P_{Position.x},{Position.y}";
     }
     
     public void MoveToTargetPos(Vector3 targetPos)
