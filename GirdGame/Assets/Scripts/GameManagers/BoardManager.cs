@@ -22,10 +22,13 @@ public class BoardManager : MonoBehaviour
     private Piece[,] pieces;
     private RectTransform _rectTransform;
     private Vector3 center;
-    private UnityAction OnDetectSpecialPiecet;
+    private UnityAction OnDetectSpecialPiece;
     private bool discoUnlocked = false;
-    private int discoColorIndex = -1;
-    private Vector2Int discoPos;
+    private int specialPieceColorIndex = -1;
+    private Vector2Int specialPiecePos;
+    private bool bombUnlocked = false;
+    HashSet<Piece> tempColumnMatches = new HashSet<Piece>();
+    HashSet<Piece> tempRowMatches = new HashSet<Piece>();
     
 
     void Update()
@@ -177,7 +180,7 @@ public class BoardManager : MonoBehaviour
     {
         searchedPos.Clear();
         matchedPieces.Clear();
-        OnDetectSpecialPiecet = null;
+        OnDetectSpecialPiece = null;
 
         matchedPieces = GetMatchList(targetPiece);
         for (int p = 0; p < matchedPieces.Count; p++)
@@ -195,16 +198,15 @@ public class BoardManager : MonoBehaviour
 
         if (matchedPieces.Count > 1)
         {
-            if (matchedPieces.Count > 6 && matchedPieces.Count < 10)
+            if (matchedPieces.Count >= 6 && matchedPieces.Count < 10)
             {
-                //TODO: Bomb piece
+                bombUnlocked = true;
+                SetupSpecialPieceData(targetPiece);
             }
-
-            if (matchedPieces.Count > 10)
+            else if (matchedPieces.Count >= 10)
             {
                 discoUnlocked = true;
-                discoColorIndex = targetPiece.ColorIndex;
-                discoPos = targetPiece.Position;
+                SetupSpecialPieceData(targetPiece);
             }
 
             GameManager.Instance.Score.SetPlayerScore(matchedPieces.Count);
@@ -213,20 +215,42 @@ public class BoardManager : MonoBehaviour
             for (int p = 0; p < matchedPieces.Count; p++)
             {
                 matchedPieces[p].OnSelected();
-                if (matchedPieces[p] is DiscoPiece)
-                    OnDetectSpecialPiecet = () => { matchedPieces[p].OnClickPiece(); };
+                if (matchedPieces[p] is BaseSpecialPiece)
+                    OnDetectSpecialPiece = () =>
+                    {
+                        matchedPieces[p].OnClickPiece();
+                        return;
+                    };
 
                 if (p == matchedPieces.Count - 1)
-                    OnDetectSpecialPiecet?.Invoke();
+                {
+                    OnDetectSpecialPiece?.Invoke();
+                }
             }
 
             GameManager.Instance.Board.FillEmptyPositions();
         }
     }
 
+    private void SetupSpecialPieceData(Piece targetPiece)
+    {
+        specialPieceColorIndex = targetPiece.ColorIndex;
+        specialPiecePos = targetPiece.Position;
+    }
+    
+    private void OnSpawnSpecialPiece(BaseSpecialPiece newPiece, int column, int row)
+    {
+        var tempX = (pieceSize * specialPiecePos.x);
+        var tempY = (pieceSize * specialPiecePos.y);
+        newPiece.customColorIndex = specialPieceColorIndex;
+        SetupPieceTransform(newPiece, tempX, tempY, specialPiecePos.x, specialPiecePos.y);
+        pieces[column, row] = newPiece;
+    }
+
     public bool CheckColorMatch(int colorIndex)
     {
         var score = 0;
+        OnDetectSpecialPiece = null;
         for (int c = 0; c < columns; c++)
         {
             for (int r = 0; r < rows; r++)
@@ -234,13 +258,42 @@ public class BoardManager : MonoBehaviour
                 if (pieces[c, r].ColorIndex == colorIndex)
                 {
                     score += 1;
-                    pieces[c, r].OnSelected();
+                    if (pieces[c,r].IsSelected == false)
+                        pieces[c, r].OnSelected();
                 }
             }
         }
 
         if (score > 1)
         {
+            OnDetectSpecialPiece?.Invoke();
+            GameManager.Instance.Score.SetPlayerScore(matchedPieces.Count);
+            GameManager.Instance.Board.FillEmptyPositions();
+        }
+
+        return score > 1;
+    }
+    
+    public bool DestroySameDimension(Vector2Int targetPos)
+    {
+        var score = 0;
+        OnDetectSpecialPiece = null;
+        for (int c = 0; c < columns; c++)
+        {
+            for (int r = 0; r < rows; r++)
+            {
+                if (c == targetPos.x || r == targetPos.y)
+                {
+                    score += 1;
+                    if (pieces[c,r].IsSelected == false)
+                        pieces[c, r].OnSelected();
+                }
+            }
+        }
+
+        if (score > 1)
+        {
+            OnDetectSpecialPiece?.Invoke();
             GameManager.Instance.Score.SetPlayerScore(matchedPieces.Count);
             GameManager.Instance.Board.FillEmptyPositions();
         }
@@ -297,19 +350,31 @@ public class BoardManager : MonoBehaviour
                 SetupPieceTransform(newPiece, tempX, tempY, tempPos.x, tempPos.y);
             }
 
-            if (discoUnlocked)
+            if (bombUnlocked)
             {
-                if (pieces[column, row].Position == discoPos)
+                if (pieces[column, row].Position == specialPiecePos)
                 {
                     var temp = pieces[column, row];
                     temp.OnSelected();
-                    var newPiece = GameManager.Instance.Pool.PickFromPool(Globals.PoolTag.disco)
-                        .GetComponent<DiscoPiece>();
-                    var tempX = (pieceSize * discoPos.x);
-                    var tempY = (pieceSize * discoPos.y);
-                    newPiece.customColorIndex = discoColorIndex;
-                    SetupPieceTransform(newPiece, tempX, tempY, discoPos.x, discoPos.y);
-                    pieces[column, row] = newPiece;
+                    var newPiece = GameManager.Instance.Pool.PickFromPool(Globals.PoolTag.bomb).GetComponent<BaseSpecialPiece>();
+                    OnSpawnSpecialPiece(newPiece, column, row);
+                    bombUnlocked = false;
+                }
+            }
+
+            if (discoUnlocked)
+            {
+                if (pieces[column, row].Position == specialPiecePos)
+                {
+                    var temp = pieces[column, row];
+                    temp.OnSelected();
+                    var newPiece = GameManager.Instance.Pool.PickFromPool(Globals.PoolTag.disco).GetComponent<BaseSpecialPiece>();
+                    OnSpawnSpecialPiece(newPiece, column, row);
+                    // var tempX = (pieceSize * specialPiecePos.x);
+                    // var tempY = (pieceSize * specialPiecePos.y);
+                    // newPiece.customColorIndex = specialPieceColorIndex;
+                    // SetupPieceTransform(newPiece, tempX, tempY, specialPiecePos.x, specialPiecePos.y);
+                    // pieces[column, row] = newPiece;
                     discoUnlocked = false;
                 }
             }
@@ -343,9 +408,7 @@ public class BoardManager : MonoBehaviour
 
         return tempMatches;
     }
-
     
-    HashSet<Piece> tempColumnMatches = new HashSet<Piece>();
     private HashSet<Piece> FindColumnMatchFromPiece(Piece targetPiece)
     {
         tempColumnMatches.Clear();
@@ -374,7 +437,7 @@ public class BoardManager : MonoBehaviour
 
         return tempColumnMatches;
     }
-    HashSet<Piece> tempRowMatches = new HashSet<Piece>();
+    
     private HashSet<Piece> FindRowMatchFromPiece(Piece targetPiece)
     {
         tempRowMatches.Clear();

@@ -681,7 +681,11 @@ MonoBehaviour:
     poolParent: {fileID: 863532026}
   - tag: 2
     poolPrefab: {fileID: 8240428727968202350, guid: 33a66d5d8cb00dc4d8c35141683f3469, type: 3}
-    size: 64
+    size: 32
+    poolParent: {fileID: 949332575}
+  - tag: 3
+    poolPrefab: {fileID: 8240428727968202350, guid: aafc28e7c57b7cd4aa853d452544235b, type: 3}
+    size: 32
     poolParent: {fileID: 949332575}
 --- !u!4 &1478155208
 Transform:
